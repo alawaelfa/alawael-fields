@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة ملاعب الأوائل</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Tajawal', sans-serif;
+        }
+        
+        .heading-font {
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        
+        .field-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+            border: 2px solid rgba(16, 185, 129, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .field-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(16, 185, 129, 0.3);
+            border-color: rgba(16, 185, 129, 0.5);
+        }
+        
+        .field-card.completed {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(29, 78, 216, 0.05) 100%);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        .time-slot {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+        
+        .time-slot:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+        
+        .time-slot.has-booking {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+        
+        .time-slot.completed {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            animation: slideUp 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        }
+        
+        .player-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+        
+        .player-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        input, select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: rgba(16, 185, 129, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .whatsapp-btn {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+        }
+        
+        .whatsapp-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+        }
+        
+        .print-btn {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+        
+        .delete-btn {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+        
+        @media print {
+            body {
+                background: white;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .glass-card, .field-card {
+                background: white;
+                border: 1px solid #000;
+            }
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%);
+            border: 2px solid rgba(139, 92, 246, 0.3);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="glass-card rounded-2xl p-6 md:p-8 mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h1 class="heading-font text-3xl md:text-5xl font-black text-white mb-2">
+                        ⚽ ملاعب الأوائل
+                    </h1>
+                    <p class="text-gray-300 text-lg">نظام إدارة التحصيل والحجوزات</p>
+                </div>
+                <div class="flex gap-3">
+                    <div class="stat-card rounded-xl px-6 py-4 text-center">
+                        <p class="text-gray-400 text-sm">إجمالي اليوم</p>
+                        <p class="heading-font text-2xl font-bold text-white" id="totalToday">0 ريال</p>
+                    </div>
+                    <div class="stat-card rounded-xl px-6 py-4 text-center">
+                        <p class="text-gray-400 text-sm">المتبقي</p>
+                        <p class="heading-font text-2xl font-bold text-yellow-400" id="totalRemaining">0 ريال</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Date Selector -->
+        <div class="glass-card rounded-2xl p-6 mb-8">
+            <div class="flex flex-col md:flex-row gap-4 items-center">
+                <label class="text-white font-bold text-lg">التاريخ:</label>
+                <input type="date" id="selectedDate" class="rounded-lg px-4 py-3 flex-1 max-w-xs font-medium">
+                <button onclick="loadBookings()" class="btn-primary text-white px-8 py-3 rounded-lg font-bold">
+                    تحميل البيانات
+                </button>
+            </div>
+        </div>
+
+        <!-- Fields Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6" id="fieldsContainer">
+            <!-- Fields will be generated here -->
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content glass-card rounded-2xl p-8 w-full max-w-4xl mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="heading-font text-3xl font-black text-white" id="modalTitle">إدارة الحجز</h2>
+                <button onclick="closeModal()" class="text-white text-3xl hover:text-red-400 transition-colors">&times;</button>
+            </div>
+            
+            <!-- Booking Info -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="text-gray-300 block mb-2 font-medium">اسم صاحب الحجز</label>
+                    <input type="text" id="bookingName" class="w-full rounded-lg px-4 py-3" placeholder="أدخل الاسم">
+                </div>
+                <div>
+                    <label class="text-gray-300 block mb-2 font-medium">رقم الجوال</label>
+                    <input type="tel" id="bookingPhone" class="w-full rounded-lg px-4 py-3" placeholder="05xxxxxxxx" dir="ltr">
+                </div>
+            </div>
+
+            <!-- Payment Progress -->
+            <div class="mb-6">
+                <div class="flex justify-between mb-2">
+                    <span class="text-gray-300 font-medium">المبلغ الإجمالي: <span id="totalAmount" class="text-white font-bold">0</span> ريال</span>
+                    <span class="text-gray-300 font-medium">المدفوع: <span id="paidAmount" class="text-green-400 font-bold">0</span> ريال</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Add Player Section -->
+            <div class="glass-card rounded-xl p-6 mb-6">
+                <h3 class="heading-font text-xl font-bold text-white mb-4">➕ إضافة لاعب</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="text-gray-300 block mb-2 text-sm">اسم اللاعب</label>
+                        <input type="text" id="playerName" class="w-full rounded-lg px-4 py-2" placeholder="الاسم">
+                    </div>
+                    <div>
+                        <label class="text-gray-300 block mb-2 text-sm">المبلغ المدفوع</label>
+                        <input type="number" id="playerAmount" class="w-full rounded-lg px-4 py-2" placeholder="0" dir="ltr">
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="addPlayer()" class="btn-primary text-white px-6 py-2 rounded-lg font-bold w-full">
+                            إضافة
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Players List -->
+            <div class="mb-6">
+                <h3 class="heading-font text-xl font-bold text-white mb-4">👥 قائمة اللاعبين</h3>
+                <div id="playersList" class="space-y-2 max-h-64 overflow-y-auto">
+                    <p class="text-gray-400 text-center py-8">لا توجد بيانات لاعبين حتى الآن</p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap gap-3">
+                <button onclick="saveBooking()" class="btn-primary text-white px-8 py-3 rounded-lg font-bold flex-1">
+                    💾 حفظ الحجز
+                </button>
+                <button onclick="shareWhatsApp()" class="whatsapp-btn text-white px-8 py-3 rounded-lg font-bold flex-1">
+                    📱 إرسال واتساب
+                </button>
+                <button onclick="printBooking()" class="print-btn text-white px-8 py-3 rounded-lg font-bold flex-1">
+                    🖨️ طباعة
+                </button>
+                <button onclick="deleteBooking()" class="delete-btn text-white px-6 py-3 rounded-lg font-bold">
+                    🗑️ حذف
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const FIELDS = [
+            { id: 1, name: 'ملعب 1', price: 350 },
+            { id: 2, name: 'ملعب 2', price: 350 },
+            { id: 3, name: 'ملعب 3', price: 320 },
+            { id: 4, name: 'ملعب 4', price: 320 },
+            { id: 5, name: 'ملعب 5', price: 170 }
+        ];
+
+        const TIME_SLOTS = [
+            '16:00 - 18:00',
+            '18:00 - 20:00',
+            '20:00 - 22:00',
+            '22:00 - 00:00',
+            '00:00 - 02:00'
+        ];
+
+        let currentBooking = null;
+        let bookingsData = {};
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('selectedDate').value = today;
+            loadBookings();
+            renderFields();
+        });
+
+        function renderFields() {
+            const container = document.getElementById('fieldsContainer');
+            container.innerHTML = FIELDS.map(field => `
+                <div class="field-card rounded-2xl p-6 ${getFieldCompletionStatus(field.id)}">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="heading-font text-2xl font-black text-white">${field.name}</h3>
+                        <span class="text-emerald-400 font-bold text-xl">${field.price} ريال</span>
+                    </div>
+                    <div class="space-y-3">
+                        ${TIME_SLOTS.map((slot, index) => renderTimeSlot(field.id, slot, index)).join('')}
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-white/20">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-300">المحصّل:</span>
+                            <span class="text-green-400 font-bold" id="field-${field.id}-collected">0 ريال</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTimeSlot(fieldId, slot, slotIndex) {
+            const bookingKey = getBookingKey(fieldId, slotIndex);
+            const booking = bookingsData[bookingKey];
+            const hasBooking = booking && booking.name;
+            const isCompleted = hasBooking && calculatePaidAmount(booking.players) >= FIELDS.find(f => f.id === fieldId).price;
+            
+            return `
+                <div class="time-slot ${hasBooking ? 'has-booking' : ''} ${isCompleted ? 'completed' : ''} rounded-lg p-4 cursor-pointer"
+                     onclick="openBookingModal(${fieldId}, ${slotIndex}, '${slot}')">
+                    <div class="flex justify-between items-center">
+                        <span class="text-white font-bold">⏰ ${slot}</span>
+                        ${hasBooking ? `
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm text-emerald-400">${booking.name}</span>
+                                ${isCompleted ? '<span class="text-blue-400">✓</span>' : '<span class="text-yellow-400">⏳</span>'}
+                            </div>
+                        ` : '<span class="text-gray-500 text-sm">متاح</span>'}
+                    </div>
+                    ${hasBooking ? `
+                        <div class="mt-2 text-xs text-gray-400">
+                            ${calculatePaidAmount(booking.players)} / ${FIELDS.find(f => f.id === fieldId).price} ريال
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function getFieldCompletionStatus(fieldId) {
+            let allCompleted = true;
+            TIME_SLOTS.forEach((slot, index) => {
+                const bookingKey = getBookingKey(fieldId, index);
+                const booking = bookingsData[bookingKey];
+                if (!booking || !booking.name || calculatePaidAmount(booking.players) < FIELDS.find(f => f.id === fieldId).price) {
+                    allCompleted = false;
+                }
+            });
+            return allCompleted ? 'completed' : '';
+        }
+
+        function openBookingModal(fieldId, slotIndex, timeSlot) {
+            const field = FIELDS.find(f => f.id === fieldId);
+            currentBooking = {
+                fieldId,
+                slotIndex,
+                timeSlot,
+                price: field.price
+            };
+
+            const bookingKey = getBookingKey(fieldId, slotIndex);
+            const existingBooking = bookingsData[bookingKey] || { name: '', phone: '', players: [] };
+
+            document.getElementById('modalTitle').textContent = `${field.name} - ${timeSlot}`;
+            document.getElementById('totalAmount').textContent = field.price;
+            document.getElementById('bookingName').value = existingBooking.name || '';
+            document.getElementById('bookingPhone').value = existingBooking.phone || '';
+            
+            currentBooking.players = existingBooking.players || [];
+            updatePlayersList();
+            updatePaymentProgress();
+
+            document.getElementById('bookingModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('bookingModal').classList.remove('active');
+            currentBooking = null;
+        }
+
+        function addPlayer() {
+            const name = document.getElementById('playerName').value.trim();
+            const amount = parseFloat(document.getElementById('playerAmount').value) || 0;
+
+            if (!name) {
+                alert('الرجاء إدخال اسم اللاعب');
+                return;
+            }
+
+            if (amount <= 0) {
+                alert('الرجاء إدخال مبلغ صحيح');
+                return;
+            }
+
+            currentBooking.players.push({ name, amount });
+            
+            document.getElementById('playerName').value = '';
+            document.getElementById('playerAmount').value = '';
+            
+            updatePlayersList();
+            updatePaymentProgress();
+        }
+
+        function removePlayer(index) {
+            if (confirm('هل تريد حذف هذا اللاعب؟')) {
+                currentBooking.players.splice(index, 1);
+                updatePlayersList();
+                updatePaymentProgress();
+            }
+        }
+
+        function updatePlayersList() {
+            const container = document.getElementById('playersList');
+            
+            if (currentBooking.players.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-center py-8">لا توجد بيانات لاعبين حتى الآن</p>';
+                return;
+            }
+
+            container.innerHTML = currentBooking.players.map((player, index) => `
+                <div class="player-item rounded-lg p-4 flex justify-between items-center">
+                    <div>
+                        <p class="text-white font-bold">${player.name}</p>
+                        <p class="text-emerald-400 text-sm">${player.amount} ريال</p>
+                    </div>
+                    <button onclick="removePlayer(${index})" class="text-red-400 hover:text-red-300 transition-colors">
+                        🗑️
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function updatePaymentProgress() {
+            const paidAmount = calculatePaidAmount(currentBooking.players);
+            const totalAmount = currentBooking.price;
+            const percentage = Math.min((paidAmount / totalAmount) * 100, 100);
+
+            document.getElementById('paidAmount').textContent = paidAmount;
+            document.getElementById('progressFill').style.width = percentage + '%';
+        }
+
+        function calculatePaidAmount(players) {
+            return players.reduce((sum, player) => sum + player.amount, 0);
+        }
+
+        function saveBooking() {
+            const name = document.getElementById('bookingName').value.trim();
+            const phone = document.getElementById('bookingPhone').value.trim();
+
+            if (!name) {
+                alert('الرجاء إدخال اسم صاحب الحجز');
+                return;
+            }
+
+            const bookingKey = getBookingKey(currentBooking.fieldId, currentBooking.slotIndex);
+            bookingsData[bookingKey] = {
+                name,
+                phone,
+                players: currentBooking.players,
+                fieldId: currentBooking.fieldId,
+                slotIndex: currentBooking.slotIndex,
+                timeSlot: currentBooking.timeSlot
+            };
+
+            saveToLocalStorage();
+            renderFields();
+            updateStatistics();
+            closeModal();
+            
+            alert('تم حفظ الحجز بنجاح ✓');
+        }
+
+        function deleteBooking() {
+            if (!confirm('هل أنت متأكد من حذف هذا الحجز؟')) {
+                return;
+            }
+
+            const bookingKey = getBookingKey(currentBooking.fieldId, currentBooking.slotIndex);
+            delete bookingsData[bookingKey];
+            
+            saveToLocalStorage();
+            renderFields();
+            updateStatistics();
+            closeModal();
+            
+            alert('تم حذف الحجز');
+        }
+
+        function shareWhatsApp() {
+            const name = document.getElementById('bookingName').value.trim();
+            const phone = document.getElementById('bookingPhone').value.trim();
+
+            if (!name || currentBooking.players.length === 0) {
+                alert('الرجاء إدخال البيانات وإضافة لاعبين على الأقل');
+                return;
+            }
+
+            const field = FIELDS.find(f => f.id === currentBooking.fieldId);
+            const paidAmount = calculatePaidAmount(currentBooking.players);
+            const remaining = currentBooking.price - paidAmount;
+
+            let message = `🏟️ *تفاصيل الحجز - ملاعب الأوائل*\n\n`;
+            message += `📍 *الملعب:* ${field.name}\n`;
+            message += `⏰ *الوقت:* ${currentBooking.timeSlot}\n`;
+            message += `📅 *التاريخ:* ${document.getElementById('selectedDate').value}\n\n`;
+            message += `👥 *قائمة اللاعبين:*\n`;
+            
+            currentBooking.players.forEach((player, index) => {
+                message += `${index + 1}. ${player.name} - ${player.amount} ريال\n`;
+            });
+
+            message += `\n💰 *المبلغ الإجمالي:* ${currentBooking.price} ريال\n`;
+            message += `✅ *المدفوع:* ${paidAmount} ريال\n`;
+            message += `⏳ *المتبقي:* ${remaining} ريال\n\n`;
+            message += `شكراً لاختياركم ملاعب الأوائل ⚽`;
+
+            const whatsappUrl = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        function printBooking() {
+            const name = document.getElementById('bookingName').value.trim();
+            
+            if (!name || currentBooking.players.length === 0) {
+                alert('الرجاء إدخال البيانات وإضافة لاعبين على الأقل');
+                return;
+            }
+
+            const field = FIELDS.find(f => f.id === currentBooking.fieldId);
+            const paidAmount = calculatePaidAmount(currentBooking.players);
+            const remaining = currentBooking.price - paidAmount;
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html lang="ar" dir="rtl">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>فاتورة الحجز</title>
+                    <style>
+                        * { font-family: 'Tajawal', Arial, sans-serif; }
+                        body { padding: 40px; max-width: 800px; margin: 0 auto; }
+                        h1 { text-align: center; border-bottom: 3px solid #10b981; padding-bottom: 15px; }
+                        .info { margin: 30px 0; }
+                        .info-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #ddd; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        th, td { padding: 12px; text-align: right; border: 1px solid #ddd; }
+                        th { background: #f3f4f6; font-weight: bold; }
+                        .total { font-size: 1.2em; font-weight: bold; margin-top: 20px; text-align: left; }
+                        .footer { text-align: center; margin-top: 40px; color: #666; }
+                    </style>
+                </head>
+                <body>
+                    <h1>🏟️ ملاعب الأوائل</h1>
+                    <div class="info">
+                        <div class="info-row"><strong>اسم صاحب الحجز:</strong><span>${name}</span></div>
+                        <div class="info-row"><strong>الملعب:</strong><span>${field.name}</span></div>
+                        <div class="info-row"><strong>الوقت:</strong><span>${currentBooking.timeSlot}</span></div>
+                        <div class="info-row"><strong>التاريخ:</strong><span>${document.getElementById('selectedDate').value}</span></div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>اسم اللاعب</th>
+                                <th>المبلغ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${currentBooking.players.map((player, index) => `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${player.name}</td>
+                                    <td>${player.amount} ريال</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <div class="total">
+                        <div>المبلغ الإجمالي: ${currentBooking.price} ريال</div>
+                        <div style="color: #10b981;">المدفوع: ${paidAmount} ريال</div>
+                        <div style="color: #ef4444;">المتبقي: ${remaining} ريال</div>
+                    </div>
+                    <div class="footer">
+                        <p>شكراً لاختياركم ملاعب الأوائل ⚽</p>
+                    </div>
+                    <script>
+                        window.onload = function() { window.print(); }
+                    </script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        function getBookingKey(fieldId, slotIndex) {
+            const date = document.getElementById('selectedDate').value;
+            return `${date}-${fieldId}-${slotIndex}`;
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('bookingsData', JSON.stringify(bookingsData));
+        }
+
+        function loadBookings() {
+            const stored = localStorage.getItem('bookingsData');
+            if (stored) {
+                bookingsData = JSON.parse(stored);
+            }
+            renderFields();
+            updateStatistics();
+        }
+
+        function updateStatistics() {
+            const date = document.getElementById('selectedDate').value;
+            let totalCollected = 0;
+            let totalExpected = 0;
+
+            FIELDS.forEach(field => {
+                TIME_SLOTS.forEach((slot, index) => {
+                    const bookingKey = `${date}-${field.id}-${index}`;
+                    const booking = bookingsData[bookingKey];
+                    
+                    if (booking && booking.players) {
+                        const paidAmount = calculatePaidAmount(booking.players);
+                        totalCollected += paidAmount;
+                        totalExpected += field.price;
+                        
+                        // Update field collected amount
+                        const fieldCollectedEl = document.getElementById(`field-${field.id}-collected`);
+                        if (fieldCollectedEl) {
+                            const fieldTotal = TIME_SLOTS.reduce((sum, _, idx) => {
+                                const key = `${date}-${field.id}-${idx}`;
+                                const b = bookingsData[key];
+                                return sum + (b ? calculatePaidAmount(b.players) : 0);
+                            }, 0);
+                            fieldCollectedEl.textContent = fieldTotal + ' ريال';
+                        }
+                    }
+                });
+            });
+
+            document.getElementById('totalToday').textContent = totalCollected + ' ريال';
+            document.getElementById('totalRemaining').textContent = (totalExpected - totalCollected) + ' ريال';
+        }
+
+        // Close modal on outside click
+        document.getElementById('bookingModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

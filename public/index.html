@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة ملاعب الأوائل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 35px;
+            margin-bottom: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .header h1 {
+            font-family: 'Cairo', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #00d4ff, #00a8cc, #005f73);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-box {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px 25px;
+            border-radius: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.18);
+            flex: 1;
+            min-width: 200px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .stat-box h3 {
+            font-size: 0.9rem;
+            color: #e0e7ff;
+            margin-bottom: 8px;
+        }
+        
+        .stat-box .value {
+            font-size: 2rem;
+            font-weight: 800;
+            font-family: 'Cairo', sans-serif;
+            color: #00e5ff;
+        }
+        
+        .stat-box.warning .value {
+            color: #ff9800;
+        }
+        
+        .stat-box.info .value {
+            color: #00d4ff;
+        }
+        
+        .date-selector {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .date-selector label {
+            font-weight: 700;
+            font-size: 1.15rem;
+        }
+        
+        .date-selector input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            border-radius: 12px;
+            padding: 14px 20px;
+            color: white;
+            font-size: 1rem;
+            flex: 1;
+            max-width: 320px;
+        }
+        
+        .date-selector input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+        
+        .date-selector button {
+            background: linear-gradient(135deg, #00d4ff, #00a8cc);
+            border: none;
+            border-radius: 12px;
+            padding: 14px 35px;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+        }
+        
+        .date-selector button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 212, 255, 0.4);
+        }
+        
+        .time-slot-section {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            border-radius: 22px;
+            padding: 30px;
+            margin-bottom: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+        
+        .time-slot-section.archived {
+            opacity: 0.6;
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.08);
+            order: 999;
+        }
+        
+        .time-slot-header {
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: #00d4ff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        
+        .time-slot-section.archived .time-slot-header {
+            color: #6b7280;
+        }
+        
+        .archive-toggle-btn {
+            background: linear-gradient(135deg, #00d4ff, #00a8cc);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+            white-space: nowrap;
+        }
+        
+        .archive-toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 212, 255, 0.4);
+        }
+        
+        .archive-toggle-btn.active {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+        
+        .archive-toggle-btn.active:hover {
+            box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+        }
+        
+        .archived-badge {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+            white-space: nowrap;
+        }
+        
+        .fields-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 18px;
+        }
+        
+        .field-box {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.18);
+            border-radius: 20px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            min-height: 160px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .field-box:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 212, 255, 0.5);
+            border-color: rgba(167, 139, 250, 0.5);
+            background: rgba(255, 255, 255, 0.12);
+        }
+        
+        .field-box.booked {
+            background: rgba(251, 146, 60, 0.15);
+            backdrop-filter: blur(10px);
+            border-color: rgba(251, 146, 60, 0.4);
+            box-shadow: 0 8px 32px rgba(251, 146, 60, 0.2);
+        }
+        
+        .field-box.completed {
+            background: rgba(34, 197, 94, 0.15);
+            backdrop-filter: blur(10px);
+            border-color: rgba(34, 197, 94, 0.4);
+            box-shadow: 0 8px 32px rgba(34, 197, 94, 0.2);
+        }
+        
+        .field-box.no-booking {
+            background: rgba(148, 163, 184, 0.15);
+            backdrop-filter: blur(10px);
+            border-color: rgba(148, 163, 184, 0.3);
+            cursor: pointer;
+            box-shadow: 0 8px 32px rgba(148, 163, 184, 0.2);
+        }
+        
+        .field-name {
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .field-price {
+            font-size: 1.2rem;
+            color: #00e5ff;
+            font-weight: 800;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .field-status {
+            font-size: 0.9rem;
+            padding: 8px 16px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-weight: 800;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        .field-status.available {
+            background: linear-gradient(135deg, #00d4ff, #00a8cc);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
+        }
+        
+        .field-status.pending {
+            background: linear-gradient(135deg, #ff9800, #ff5722);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+        }
+        
+        .field-status.complete {
+            background: linear-gradient(135deg, #00e676, #00c853);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 230, 118, 0.4);
+        }
+        
+        .field-status.no-booking {
+            background: linear-gradient(135deg, #78909c, #546e7a);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(120, 144, 156, 0.4);
+        }
+        
+        .booking-info {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            margin-top: 8px;
+        }
+        
+        .booking-info div {
+            margin-top: 4px;
+        }
+        
+        .deposit-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+        }
+        
+        .locked-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+            z-index: 5;
+        }
+        
+        .field-box.locked {
+            opacity: 0.7;
+            cursor: not-allowed !important;
+        }
+        
+        .field-box.locked:hover {
+            transform: none !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border-radius: 28px;
+            padding: 40px;
+            max-width: 920px;
+            width: 100%;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 22px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        .modal-title {
+            font-family: 'Cairo', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #f1f5f9;
+        }
+        
+        .close-btn {
+            background: rgba(239, 68, 68, 0.15);
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            width: 45px;
+            height: 45px;
+            font-size: 1.8rem;
+            color: #ef4444;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-btn:hover {
+            background: rgba(239, 68, 68, 0.25);
+            transform: rotate(90deg);
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .form-group label {
+            font-weight: 700;
+            color: #cbd5e1;
+            font-size: 0.95rem;
+        }
+        
+        .form-group input {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+        
+        .form-group input[readonly] {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.1);
+            cursor: default;
+            color: #cbd5e1;
+        }
+        
+        .field-edit-btn {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            border: none;
+            border-radius: 8px;
+            width: 34px;
+            height: 34px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+        }
+        
+        .field-edit-btn:hover {
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.5);
+        }
+        
+        .field-edit-btn.editing {
+            background: linear-gradient(135deg, #00d4ff, #00a8cc);
+        }
+        
+        .progress-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 18px;
+            padding: 22px;
+            margin-bottom: 28px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            color: #cbd5e1;
+        }
+        
+        .progress-bar {
+            height: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #d97706);
+            transition: width 0.6s ease;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+        }
+        
+        .add-player-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 18px;
+            padding: 25px;
+            margin-bottom: 28px;
+        }
+        
+        .add-player-section h3 {
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 18px;
+        }
+        
+        .add-player-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+        }
+        
+        .add-player-form input {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: white;
+        }
+        
+        .add-player-form input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+        
+        .add-player-form button {
+            background: linear-gradient(135deg, #00d4ff, #00a8cc);
+            border: none;
+            border-radius: 12px;
+            padding: 14px 30px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        
+        .players-list-section h3 {
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 18px;
+        }
+        
+        .players-list {
+            max-height: 320px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+        
+        .player-item {
+            background: rgba(255, 255, 255, 0.06);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            padding: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .player-info h4 {
+            font-weight: 700;
+            margin-bottom: 6px;
+            font-size: 1.05rem;
+        }
+        
+        .player-info p {
+            color: #00d4ff;
+            font-weight: 700;
+        }
+        
+        .delete-player-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border: none;
+            border-radius: 10px;
+            padding: 10px 18px;
+            color: white;
+            cursor: pointer;
+            font-size: 1.15rem;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+        }
+        
+        .btn {
+            border: none;
+            border-radius: 14px;
+            padding: 16px 22px;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+        }
+        
+        .btn-save {
+            background: linear-gradient(135deg, #00d4ff, #00a8cc);
+        }
+        
+        .btn-whatsapp {
+            background: linear-gradient(135deg, #25D366, #128C7E);
+        }
+        
+        .btn-print {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+        }
+        
+        .btn-delete {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        
+        .btn-clear {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        
+        .btn-archive {
+            background: linear-gradient(135deg, #00d4ff, #00a8cc);
+        }
+        
+        .btn-archive.archived {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 45px 20px;
+            color: #64748b;
+        }
+        
+        @media (max-width: 1400px) {
+            .fields-row {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 1000px) {
+            .fields-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .fields-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .add-player-form {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>⚽ ملاعب الأوائل</h1>
+                <p style="color: #e0e7ff; font-size: 1.1rem;">نظام إدارة التحصيل والحجوزات</p>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-box">
+                    <h3>إجمالي المحصل اليوم</h3>
+                    <div class="value" id="totalCollected">0 ريال</div>
+                </div>
+                <div class="stat-box" style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.1)); border-color: rgba(251, 191, 36, 0.4);">
+                    <h3>المتبقي للتحصيل</h3>
+                    <div class="value warning" id="totalRemaining">0 ريال</div>
+                </div>
+                <div class="stat-box" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.1)); border-color: rgba(59, 130, 246, 0.4);">
+                    <h3>عدد الحجوزات</h3>
+                    <div class="value info" id="totalBookings">0</div>
+                </div>
+                <div class="stat-box" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.1)); border-color: rgba(245, 158, 11, 0.4);">
+                    <h3>إجمالي العرابين</h3>
+                    <div class="value" style="color: #f59e0b;" id="totalDeposits">0 ريال</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="date-selector">
+            <label>📅 التاريخ:</label>
+            <input type="date" id="selectedDate">
+            <button onclick="loadData()">🔄 تحميل البيانات</button>
+        </div>
+
+        <div id="timeSlotsContainer"></div>
+    </div>
+
+    <div class="modal" id="bookingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">إدارة الحجز</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+
+            <div class="form-grid" id="bookingInfoSection">
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 1rem;">
+                        <input type="checkbox" id="noBookingMode" onchange="toggleNoBookingMode()" style="width: 20px; height: 20px; cursor: pointer;">
+                        <span>🚫 لا يوجد حجز (إغلاق الفترة)</span>
+                    </label>
+                </div>
+                <div id="bookingFields" style="display: contents;">
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 1rem;">
+                            <input type="checkbox" id="anonymousBooking" onchange="toggleAnonymousMode()" style="width: 20px; height: 20px; cursor: pointer;">
+                            <span>🔒 حجز بدون اسم (عربون فقط)</span>
+                        </label>
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 1rem;">
+                            <input type="checkbox" id="quickBookingMode" onchange="toggleQuickBookingMode()" style="width: 20px; height: 20px; cursor: pointer;">
+                            <span>⚡ حجز سريع (بدون عربون)</span>
+                        </label>
+                    </div>
+                    <div class="form-group" id="nameField">
+                        <label>اسم صاحب الحجز *</label>
+                        <div style="position: relative;">
+                            <input type="text" id="bookingName" placeholder="أدخل الاسم" readonly>
+                            <button class="field-edit-btn" id="editBookingBtn" onclick="toggleEditMode()" style="display: none;">
+                                <span>✏️</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group" id="phoneField">
+                        <label>رقم الجوال</label>
+                        <input type="tel" id="bookingPhone" placeholder="05xxxxxxxx" dir="ltr" readonly>
+                    </div>
+                    <div class="form-group" id="depositField">
+                        <label>العربون المدفوع</label>
+                        <div style="position: relative;">
+                            <input type="number" id="depositAmount" placeholder="0" dir="ltr" readonly>
+                            <button class="field-edit-btn" id="editDepositBtn" onclick="toggleDepositEdit()" style="display: none;">
+                                <span>✏️</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>سعر الملعب (يمكن التعديل)</label>
+                        <div style="position: relative;">
+                            <input type="number" id="customPrice" placeholder="سعر افتراضي" dir="ltr">
+                            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.9rem;">ريال</span>
+                        </div>
+                        <small style="color: #94a3b8; font-size: 0.85rem; display: block; margin-top: 5px;">
+                            💡 اتركه فارغاً للسعر الافتراضي
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="progress-section">
+                <div class="progress-header">
+                    <span>المبلغ الإجمالي: <strong id="totalAmount">0</strong> ريال</span>
+                    <span>من اللاعبين: <strong id="paidAmount" style="color: #00d4ff;">0</strong> ريال</span>
+                </div>
+                <div style="margin-bottom: 10px; color: #f59e0b; font-weight: 600; font-size: 0.95rem;" id="depositInfo"></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div style="margin-top: 10px; display: flex; justify-content: space-between; font-size: 0.95rem;">
+                    <span style="color: #cbd5e1;">المتبقي:</span>
+                    <span style="color: #00e5ff; font-weight: 700;" id="remainingAmount">0 ريال</span>
+                </div>
+            </div>
+
+            <div class="add-player-section">
+                <h3>➕ إضافة لاعب</h3>
+                <div class="add-player-form">
+                    <input type="text" id="playerName" placeholder="اسم اللاعب">
+                    <input type="number" id="playerAmount" placeholder="المبلغ المدفوع" dir="ltr">
+                    <button onclick="addPlayer()">إضافة</button>
+                </div>
+            </div>
+
+            <div class="players-list-section">
+                <h3>👥 قائمة اللاعبين</h3>
+                <div class="players-list" id="playersList">
+                    <div class="empty-state">لا توجد بيانات لاعبين</div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-save" onclick="saveBooking()">💾 حفظ الحجز</button>
+                <button class="btn btn-whatsapp" onclick="shareWhatsApp()">📱 واتساب</button>
+                <button class="btn btn-print" onclick="printBooking()">🖨️ طباعة</button>
+                <button class="btn btn-clear" onclick="clearBooking()" id="clearBookingBtn" style="display: none;">🔄 إلغاء الحجز</button>
+                <button class="btn btn-delete" onclick="deleteBooking()">🗑️ حذف نهائي</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Add Player Modal -->
+    <div class="modal" id="quickAddPlayerModal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="quickAddPlayerTitle">➕ إضافة لاعب سريعة</h2>
+                <button class="close-btn" onclick="closeQuickAddPlayer()">&times;</button>
+            </div>
+
+            <div style="padding: 20px;">
+                <div class="form-grid" style="gap: 15px;">
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label>اسم اللاعب *</label>
+                        <input type="text" id="quickPlayerName" placeholder="أدخل اسم اللاعب" style="width: 100%;">
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label>المبلغ المدفوع *</label>
+                        <input type="number" id="quickPlayerAmount" placeholder="0" dir="ltr" style="width: 100%;">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-top: 25px;">
+                    <button onclick="saveQuickPlayer()" style="flex: 1; background: linear-gradient(135deg, #00d4ff, #00a8cc); color: white; border: none; padding: 14px; border-radius: 12px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease;">
+                        ✅ حفظ
+                    </button>
+                    <button onclick="closeQuickAddPlayer()" style="flex: 1; background: linear-gradient(135deg, #6b7280, #4b5563); color: white; border: none; padding: 14px; border-radius: 12px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease;">
+                        ✖️ إلغاء
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const FIELDS = [
+            { id: 1, name: 'ملعب 1', price: 350 },
+            { id: 2, name: 'ملعب 2', price: 350 },
+            { id: 3, name: 'ملعب 3', price: 320 },
+            { id: 4, name: 'ملعب 4', price: 320 },
+            { id: 5, name: 'ملعب 5', price: 170 }
+        ];
+
+        const TIME_SLOTS = [
+            '16:00 - 18:00',
+            '18:00 - 20:00',
+            '20:00 - 22:00',
+            '22:00 - 00:00',
+            '00:00 - 02:00'
+        ];
+
+        let bookingsData = {};
+        let currentBooking = null;
+        let isEditMode = false;
+        let isAnonymousMode = false;
+        let isNoBookingMode = false;
+        let isDepositEditMode = false;
+        let isQuickBookingMode = false;
+        let quickAddFieldId = null;
+        let quickAddSlotIndex = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('selectedDate').value = today;
+            loadData();
+        });
+
+        function showQuickAddPlayer(fieldId, slotIndex) {
+            quickAddFieldId = fieldId;
+            quickAddSlotIndex = slotIndex;
+            
+            const field = FIELDS.find(f => f.id === fieldId);
+            document.getElementById('quickAddPlayerTitle').textContent = '➕ إضافة لاعب - ' + field.name + ' - ' + TIME_SLOTS[slotIndex];
+            
+            document.getElementById('quickPlayerName').value = '';
+            document.getElementById('quickPlayerAmount').value = '';
+            
+            document.getElementById('quickAddPlayerModal').style.display = 'flex';
+            
+            // Add Enter key support
+            const nameInput = document.getElementById('quickPlayerName');
+            const amountInput = document.getElementById('quickPlayerAmount');
+            
+            nameInput.onkeypress = function(e) {
+                if (e.key === 'Enter') {
+                    amountInput.focus();
+                }
+            };
+            
+            amountInput.onkeypress = function(e) {
+                if (e.key === 'Enter') {
+                    saveQuickPlayer();
+                }
+            };
+            
+            nameInput.focus();
+        }
+
+        function closeQuickAddPlayer() {
+            document.getElementById('quickAddPlayerModal').style.display = 'none';
+            quickAddFieldId = null;
+            quickAddSlotIndex = null;
+        }
+
+        function saveQuickPlayer() {
+            const name = document.getElementById('quickPlayerName').value.trim();
+            const amount = parseFloat(document.getElementById('quickPlayerAmount').value);
+
+            if (!name) {
+                alert('⚠️ الرجاء إدخال اسم اللاعب');
+                return;
+            }
+
+            if (!amount || amount <= 0) {
+                alert('⚠️ الرجاء إدخال مبلغ صحيح');
+                return;
+            }
+
+            const key = getBookingKey(quickAddFieldId, quickAddSlotIndex);
+            const booking = bookingsData[key];
+
+            if (booking) {
+                if (!booking.players) {
+                    booking.players = [];
+                }
+                booking.players.push({ name: name, amount: amount });
+                
+                saveData();
+                renderTimeSlots();
+                updateStats();
+                closeQuickAddPlayer();
+            }
+        }
+
+        function toggleQuickBookingMode() {
+            isQuickBookingMode = document.getElementById('quickBookingMode').checked;
+            const nameField = document.getElementById('nameField');
+            const phoneField = document.getElementById('phoneField');
+            const depositField = document.getElementById('depositField');
+            const nameInput = document.getElementById('bookingName');
+            const phoneInput = document.getElementById('bookingPhone');
+            const depositInput = document.getElementById('depositAmount');
+            const anonymousCheckbox = document.getElementById('anonymousBooking');
+            
+            if (isQuickBookingMode) {
+                // Hide all fields
+                nameField.style.display = 'none';
+                phoneField.style.display = 'none';
+                depositField.style.display = 'none';
+                
+                // Set values
+                nameInput.value = 'حجز سريع';
+                phoneInput.value = '';
+                depositInput.value = 0;
+                
+                // Uncheck anonymous mode
+                anonymousCheckbox.checked = false;
+                isAnonymousMode = false;
+            } else {
+                // Show fields
+                nameField.style.display = 'block';
+                phoneField.style.display = 'block';
+                depositField.style.display = 'block';
+                
+                // Clear name if it was quick booking
+                if (nameInput.value === 'حجز سريع') {
+                    nameInput.value = '';
+                }
+                
+                // Enable fields if new booking
+                const key = getBookingKey(currentBooking.fieldId, currentBooking.slotIndex);
+                const existing = bookingsData[key];
+                if (!existing || !existing.name || existing.name === 'حجز سريع') {
+                    nameInput.removeAttribute('readonly');
+                    phoneInput.removeAttribute('readonly');
+                    depositInput.removeAttribute('readonly');
+                }
+            }
+        }
+
+        function toggleDepositEdit() {
+            isDepositEditMode = !isDepositEditMode;
+            const depositInput = document.getElementById('depositAmount');
+            const editDepositBtn = document.getElementById('editDepositBtn');
+            
+            if (isDepositEditMode) {
+                depositInput.removeAttribute('readonly');
+                depositInput.focus();
+                editDepositBtn.classList.add('editing');
+                editDepositBtn.innerHTML = '<span>💾</span>';
+                editDepositBtn.title = 'حفظ العربون';
+            } else {
+                depositInput.setAttribute('readonly', 'readonly');
+                editDepositBtn.classList.remove('editing');
+                editDepositBtn.innerHTML = '<span>✏️</span>';
+                editDepositBtn.title = 'تعديل العربون';
+            }
+            
+            updateProgress();
+        }
+
+        function toggleNoBookingMode() {
+            isNoBookingMode = document.getElementById('noBookingMode').checked;
+            const bookingFields = document.getElementById('bookingFields');
+            const anonymousCheckbox = document.getElementById('anonymousBooking');
+            
+            if (isNoBookingMode) {
+                // Hide all booking fields
+                bookingFields.style.display = 'none';
+                anonymousCheckbox.checked = false;
+            } else {
+                // Show booking fields
+                bookingFields.style.display = 'contents';
+            }
+        }
+
+        function toggleAnonymousMode() {
+            isAnonymousMode = document.getElementById('anonymousBooking').checked;
+            const nameField = document.getElementById('nameField');
+            const phoneField = document.getElementById('phoneField');
+            const nameInput = document.getElementById('bookingName');
+            const phoneInput = document.getElementById('bookingPhone');
+            const depositInput = document.getElementById('depositAmount');
+            
+            if (isAnonymousMode) {
+                // Hide name and phone fields
+                nameField.style.display = 'none';
+                phoneField.style.display = 'none';
+                
+                // Clear and disable them
+                nameInput.value = 'حجز بدون اسم';
+                phoneInput.value = '';
+                
+                // Enable deposit field
+                depositInput.removeAttribute('readonly');
+                depositInput.focus();
+            } else {
+                // Show name and phone fields
+                nameField.style.display = 'block';
+                phoneField.style.display = 'block';
+                
+                // Clear name if it was anonymous
+                if (nameInput.value === 'حجز بدون اسم') {
+                    nameInput.value = '';
+                }
+                
+                // Enable all fields if new booking
+                const key = getBookingKey(currentBooking.fieldId, currentBooking.slotIndex);
+                const existing = bookingsData[key];
+                if (!existing || !existing.name || existing.name === 'حجز بدون اسم') {
+                    nameInput.removeAttribute('readonly');
+                    phoneInput.removeAttribute('readonly');
+                    depositInput.removeAttribute('readonly');
+                }
+            }
+        }
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const nameInput = document.getElementById('bookingName');
+            const phoneInput = document.getElementById('bookingPhone');
+            const depositInput = document.getElementById('depositAmount');
+            const editBtn = document.getElementById('editBookingBtn');
+            
+            if (isEditMode) {
+                nameInput.removeAttribute('readonly');
+                phoneInput.removeAttribute('readonly');
+                depositInput.removeAttribute('readonly');
+                editBtn.classList.add('editing');
+                editBtn.innerHTML = '<span>💾</span>';
+                editBtn.title = 'حفظ التعديلات';
+            } else {
+                nameInput.setAttribute('readonly', 'readonly');
+                phoneInput.setAttribute('readonly', 'readonly');
+                depositInput.setAttribute('readonly', 'readonly');
+                editBtn.classList.remove('editing');
+                editBtn.innerHTML = '<span>✏️</span>';
+                editBtn.title = 'تعديل البيانات';
+            }
+        }
+
+        function loadData() {
+            const stored = localStorage.getItem('fieldsBookings');
+            if (stored) {
+                try {
+                    bookingsData = JSON.parse(stored);
+                } catch (e) {
+                    bookingsData = {};
+                }
+            }
+            renderTimeSlots();
+            updateStats();
+        }
+
+        function saveData() {
+            localStorage.setItem('fieldsBookings', JSON.stringify(bookingsData));
+        }
+
+        function getBookingKey(fieldId, slotIndex) {
+            const date = document.getElementById('selectedDate').value;
+            return date + '_' + fieldId + '_' + slotIndex;
+        }
+
+        function renderTimeSlots() {
+            try {
+                const container = document.getElementById('timeSlotsContainer');
+                const archivedSlots = JSON.parse(localStorage.getItem('archivedSlots') || '{}');
+                const date = document.getElementById('selectedDate').value;
+                
+                console.log('renderTimeSlots called for date:', date);
+                
+                // Get day of week (0 = Sunday, 5 = Friday)
+                const selectedDate = new Date(date + 'T00:00:00');
+                const dayOfWeek = selectedDate.getDay();
+                const isFriday = dayOfWeek === 5;
+                
+                console.log('Day of week:', dayOfWeek, 'isFriday:', isFriday);
+                
+                const activeSlots = [];
+                const archivedSlotsArray = [];
+                
+                TIME_SLOTS.forEach((slot, slotIndex) => {
+                    // Hide first slot (4pm-6pm) except on Friday
+                    if (slotIndex === 0 && !isFriday) {
+                        console.log('Skipping slot 0 (not Friday)');
+                        return; // Skip this slot
+                    }
+                    
+                    // Calculate remaining amount for this slot
+                    let slotRemaining = 0;
+                    let slotTotal = 0;
+                    let slotCollected = 0;
+                    let activeBookings = 0;
+                    
+                    FIELDS.forEach(field => {
+                        const key = getBookingKey(field.id, slotIndex);
+                        const booking = bookingsData[key];
+                        
+                        if (booking && booking.name && !booking.isNoBooking && booking.name !== 'لا يوجد حجز') {
+                            const paid = calculatePaid(booking.players);
+                            const deposit = booking.deposit || 0;
+                            const totalPaid = paid + deposit;
+                            const bookingPrice = booking.customPrice || field.price;
+                            const remaining = bookingPrice - totalPaid;
+                            
+                            if (remaining > 0) {
+                                slotRemaining += remaining;
+                                activeBookings++;
+                            }
+                            slotTotal += bookingPrice;
+                            slotCollected += totalPaid;
+                        }
+                    });
+                    
+                    const slotKey = date + '_slot_' + slotIndex;
+                    const isArchived = archivedSlots[slotKey];
+                    
+                    // Create slot remaining badge
+                    let remainingBadge = '';
+                    if (slotRemaining > 0) {
+                        remainingBadge = '<div style="background: linear-gradient(135deg, #00e5ff, #f59e0b); color: white; padding: 8px 16px; border-radius: 12px; font-size: 0.95rem; font-weight: 700; box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4); display: flex; align-items: center; gap: 8px;">' +
+                            '<span>⏳ متبقي للتحصيل:</span>' +
+                            '<span style="font-size: 1.1rem;">' + slotRemaining + ' ريال</span>' +
+                            '<span style="font-size: 0.85rem; opacity: 0.9;">(' + activeBookings + ' حجز)</span>' +
+                        '</div>';
+                    } else if (slotTotal > 0) {
+                        remainingBadge = '<div style="background: linear-gradient(135deg, #00d4ff, #00a8cc); color: white; padding: 8px 16px; border-radius: 12px; font-size: 0.95rem; font-weight: 700; box-shadow: 0 2px 8px rgba(0, 212, 255, 0.4);">' +
+                            '<span>✅ مكتمل</span>' +
+                            '<span style="margin-right: 8px; font-size: 1.1rem;">' + slotCollected + ' ريال</span>' +
+                        '</div>';
+                    }
+                    
+                    const slotHtml = '<div class="time-slot-section' + (isArchived ? ' archived' : '') + '">' +
+                        '<div class="time-slot-header">' +
+                            '<span>⏰ ' + slot + '</span>' +
+                            remainingBadge +
+                            (isArchived ? 
+                                '<span class="archived-badge">🔒 الفترة مغلقة</span>' +
+                                '<button class="archive-toggle-btn" onclick="toggleSlotArchive(' + slotIndex + ')">🔓 فتح الفترة</button>' :
+                                '<button class="archive-toggle-btn active" onclick="toggleSlotArchive(' + slotIndex + ')">🔒 إغلاق الفترة</button>'
+                            ) +
+                        '</div>' +
+                        '<div class="fields-row">' +
+                            FIELDS.map(field => renderFieldBox(field, slotIndex)).join('') +
+                        '</div>' +
+                    '</div>';
+                    
+                    if (isArchived) {
+                        archivedSlotsArray.push(slotHtml);
+                    } else {
+                        activeSlots.push(slotHtml);
+                    }
+                });
+                
+                console.log('Active slots:', activeSlots.length, 'Archived slots:', archivedSlotsArray.length);
+                
+                container.innerHTML = activeSlots.join('') + archivedSlotsArray.join('');
+                
+                console.log('Render complete');
+            } catch (error) {
+                console.error('Error in renderTimeSlots:', error);
+                alert('❌ خطأ في عرض الفترات: ' + error.message);
+            }
+        }
+
+        function toggleSlotArchive(slotIndex) {
+            const slotKey = document.getElementById('selectedDate').value + '_slot_' + slotIndex;
+            let archivedSlots = JSON.parse(localStorage.getItem('archivedSlots') || '{}');
+            
+            if (archivedSlots[slotKey]) {
+                // Opening the period - no confirmation needed
+                delete archivedSlots[slotKey];
+                localStorage.setItem('archivedSlots', JSON.stringify(archivedSlots));
+                renderTimeSlots();
+                return;
+            }
+            
+            // Closing the period - check for incomplete payments
+            let incompleteBookings = [];
+            let totalPending = 0;
+            
+            FIELDS.forEach(field => {
+                const key = getBookingKey(field.id, slotIndex);
+                const booking = bookingsData[key];
+                
+                if (booking && booking.name && !booking.isNoBooking && booking.name !== 'لا يوجد حجز') {
+                    const paid = calculatePaid(booking.players);
+                    const deposit = booking.deposit || 0;
+                    const totalPaid = paid + deposit;
+                    const remaining = field.price - totalPaid;
+                    
+                    if (remaining > 0) {
+                        incompleteBookings.push({
+                            field: field.name,
+                            name: booking.name,
+                            remaining: remaining
+                        });
+                        totalPending += remaining;
+                    }
+                }
+            });
+            
+            // Build confirmation message
+            let message = '🔒 تأكيد إغلاق الفترة\n\n';
+            message += 'الفترة: ' + TIME_SLOTS[slotIndex] + '\n\n';
+            
+            if (incompleteBookings.length > 0) {
+                message += '⚠️ تنبيه: يوجد حجوزات لم يكتمل تحصيلها!\n\n';
+                message += '📋 الحجوزات غير المكتملة:\n';
+                incompleteBookings.forEach((booking, index) => {
+                    message += (index + 1) + '. ' + booking.field + ' - ' + booking.name + '\n';
+                    message += '   المتبقي: ' + booking.remaining + ' ريال\n';
+                });
+                message += '\n💰 إجمالي المتبقي: ' + totalPending + ' ريال\n\n';
+                message += '❓ هل تريد إغلاق الفترة رغم وجود مبالغ متبقية؟';
+            } else {
+                message += '✅ جميع التحصيلات مكتملة!\n\n';
+                message += 'هل تريد إغلاق الفترة؟';
+            }
+            
+            const confirmed = confirm(message);
+            
+            if (confirmed) {
+                archivedSlots[slotKey] = true;
+                localStorage.setItem('archivedSlots', JSON.stringify(archivedSlots));
+                renderTimeSlots();
+            }
+        }
+
+        function renderFieldBox(field, slotIndex) {
+            const key = getBookingKey(field.id, slotIndex);
+            const booking = bookingsData[key];
+            
+            // Check if time slot is closed
+            const slotKey = document.getElementById('selectedDate').value + '_slot_' + slotIndex;
+            const archivedSlots = JSON.parse(localStorage.getItem('archivedSlots') || '{}');
+            const isClosed = archivedSlots[slotKey];
+            
+            let statusClass = 'available';
+            let statusText = 'متاح';
+            let boxClass = 'available';
+            let contentHtml = '';
+            let depositBadge = '';
+            let clickHandler = isClosed ? 'onclick="alertClosedPeriod()"' : 'onclick="openModal(' + field.id + ', ' + slotIndex + ', \'' + TIME_SLOTS[slotIndex] + '\', ' + field.price + ')"';
+            
+            if (booking && booking.name) {
+                // Check if no booking status
+                if (booking.isNoBooking || booking.name === 'لا يوجد حجز') {
+                    statusClass = 'no-booking';
+                    statusText = '🚫 لا يوجد حجز';
+                    boxClass = 'no-booking';
+                    
+                    contentHtml = '<div class="field-name">' + field.name + '</div>' +
+                        '<div class="field-price">' + field.price + ' ريال</div>' +
+                        '<div class="field-status no-booking">' + statusText + '</div>' +
+                        '<div style="text-align: center; margin-top: 15px; color: #9ca3af; font-size: 0.95rem;">الفترة مغلقة</div>';
+                } else {
+                    const paid = calculatePaid(booking.players);
+                    const deposit = booking.deposit || 0;
+                    const totalPaid = paid + deposit;
+                    const bookingPrice = booking.customPrice || field.price;
+                    const remaining = bookingPrice - totalPaid;
+                    const isComplete = totalPaid >= bookingPrice;
+                    const isAnonymous = booking.name === 'حجز بدون اسم';
+                    const isQuickBooking = booking.name === 'حجز سريع';
+                    
+                    if (isComplete) {
+                        statusClass = 'complete';
+                        statusText = '✓ مكتمل';
+                        boxClass = 'completed';
+                    } else {
+                        statusClass = 'pending';
+                        statusText = '⏳ قيد التحصيل';
+                        boxClass = 'booked';
+                    }
+                    
+                    if (deposit > 0) {
+                        depositBadge = '<div class="deposit-badge">عربون: ' + deposit + ' ريال</div>';
+                    }
+                    
+                    // Show different displays based on booking type
+                    let displayName = '';
+                    let nameStyle = '';
+                    
+                    if (isQuickBooking) {
+                        displayName = '⚡ ' + booking.name;
+                        nameStyle = 'color: #22d3ee; font-weight: 900; text-shadow: 0 0 10px rgba(34, 211, 238, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);';
+                    } else if (isAnonymous) {
+                        displayName = '🔒 ' + booking.name;
+                        nameStyle = 'color: #26c6da; font-weight: 900; text-shadow: 0 0 10px rgba(252, 211, 77, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);';
+                    } else {
+                        displayName = '👤 ' + booking.name;
+                        nameStyle = 'color: #ffffff; font-weight: 900; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);';
+                    }
+                    
+                    contentHtml = '<div class="field-name">' + field.name + '</div>' +
+                        '<div class="field-price">' + bookingPrice + ' ريال</div>' +
+                        '<div class="field-status ' + statusClass + '">' + statusText + '</div>' +
+                        '<div class="booking-info" style="margin-top: 15px;">' +
+                            '<div style="font-size: 1.1rem; ' + nameStyle + '"><strong>' + displayName + '</strong></div>' +
+                            '<div style="margin-top: 8px; font-size: 0.9rem; color: ' + (isComplete ? '#60a5fa' : '#00e5ff') + '; font-weight: 700;">' +
+                                (isComplete ? '✓ الدفع مكتمل' : '⏳ متبقي: ' + remaining + ' ريال') +
+                            '</div>' +
+                            (!isComplete ? '<button class="quick-add-player-btn" onclick="event.stopPropagation(); showQuickAddPlayer(' + field.id + ', ' + slotIndex + ')" style="margin-top: 10px; width: 100%; background: linear-gradient(135deg, #00d4ff, #00a8cc); color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease;">➕ إضافة لاعب</button>' : '') +
+                        '</div>';
+                }
+                
+            } else {
+                // Available slot
+                contentHtml = '<div class="field-name">' + field.name + '</div>' +
+                    '<div class="field-price">' + field.price + ' ريال</div>' +
+                    '<div class="field-status available">متاح</div>' +
+                    '<div style="text-align: center; margin-top: 20px; color: #00e5ff; font-size: 1rem; font-weight: 800; text-shadow: 0 0 10px rgba(253, 224, 71, 0.6), 0 2px 4px rgba(0, 0, 0, 0.3);">' + 
+                    (isClosed ? 'الفترة مغلقة' : '👆 اضغط للحجز') + '</div>';
+            }
+            
+            // Add locked class if period is closed
+            if (isClosed) {
+                boxClass += ' locked';
+            }
+            
+            return '<div class="field-box ' + boxClass + '" ' + clickHandler + '>' +
+                depositBadge +
+                (isClosed ? '<div class="locked-badge">🔒</div>' : '') +
+                contentHtml +
+            '</div>';
+        }
+
+        function alertClosedPeriod() {
+            alert('⚠️ الفترة مغلقة!\n\nلا يمكن إجراء أي تعديلات على هذه الفترة.\nالرجاء فتح الفترة أولاً من زر "🔓 فتح الفترة"');
+        }
+
+        function updateStats() {
+            let totalCollected = 0;
+            let totalExpected = 0;
+            let bookingsCount = 0;
+            let totalDeposits = 0;
+
+            FIELDS.forEach(field => {
+                TIME_SLOTS.forEach((slot, idx) => {
+                    const key = getBookingKey(field.id, idx);
+                    const booking = bookingsData[key];
+                    if (booking && booking.name) {
+                        // Skip no-booking periods from calculations
+                        if (booking.isNoBooking || booking.name === 'لا يوجد حجز') {
+                            return;
+                        }
+                        
+                        bookingsCount++;
+                        const paid = calculatePaid(booking.players);
+                        const deposit = booking.deposit || 0;
+                        const totalPaid = paid + deposit;
+                        const bookingPrice = booking.customPrice || field.price;
+                        
+                        totalCollected += totalPaid;
+                        totalExpected += bookingPrice;
+                        
+                        if (booking.deposit) {
+                            totalDeposits += booking.deposit;
+                        }
+                    }
+                });
+            });
+
+            document.getElementById('totalCollected').textContent = totalCollected + ' ريال';
+            document.getElementById('totalRemaining').textContent = (totalExpected - totalCollected) + ' ريال';
+            document.getElementById('totalBookings').textContent = bookingsCount;
+            document.getElementById('totalDeposits').textContent = totalDeposits + ' ريال';
+        }
+
+        function openModal(fieldId, slotIndex, timeSlot, price) {
+            isEditMode = false;
+            isAnonymousMode = false;
+            isNoBookingMode = false;
+            isDepositEditMode = false;
+            isQuickBookingMode = false;
+            
+            const key = getBookingKey(fieldId, slotIndex);
+            const existing = bookingsData[key];
+            
+            // Initialize currentBooking with correct price
+            const bookingPrice = (existing && existing.customPrice) ? existing.customPrice : price;
+            
+            currentBooking = {
+                fieldId: fieldId,
+                slotIndex: slotIndex,
+                timeSlot: timeSlot,
+                price: bookingPrice,
+                players: [],
+                deposit: 0
+            };
+            
+            const nameInput = document.getElementById('bookingName');
+            const phoneInput = document.getElementById('bookingPhone');
+            const depositInput = document.getElementById('depositAmount');
+            const editBtn = document.getElementById('editBookingBtn');
+            const editDepositBtn = document.getElementById('editDepositBtn');
+            const anonymousCheckbox = document.getElementById('anonymousBooking');
+            const noBookingCheckbox = document.getElementById('noBookingMode');
+            const quickBookingCheckbox = document.getElementById('quickBookingMode');
+            const nameField = document.getElementById('nameField');
+            const phoneField = document.getElementById('phoneField');
+            const depositField = document.getElementById('depositField');
+            const clearBtn = document.getElementById('clearBookingBtn');
+            const bookingFields = document.getElementById('bookingFields');
+
+            if (existing && existing.name) {
+                // Show clear button for existing bookings
+                clearBtn.style.display = 'block';
+                
+                // Check if it's no booking status
+                if (existing.isNoBooking || existing.name === 'لا يوجد حجز') {
+                    isNoBookingMode = true;
+                    noBookingCheckbox.checked = true;
+                    bookingFields.style.display = 'none';
+                    anonymousCheckbox.checked = false;
+                    quickBookingCheckbox.checked = false;
+                    editDepositBtn.style.display = 'none';
+                }
+                // Check if it's quick booking
+                else if (existing.isQuickBooking || existing.name === 'حجز سريع') {
+                    isQuickBookingMode = true;
+                    noBookingCheckbox.checked = false;
+                    bookingFields.style.display = 'contents';
+                    quickBookingCheckbox.checked = true;
+                    anonymousCheckbox.checked = false;
+                    nameField.style.display = 'none';
+                    phoneField.style.display = 'none';
+                    depositField.style.display = 'none';
+                    nameInput.value = 'حجز سريع';
+                    phoneInput.value = '';
+                    depositInput.value = 0;
+                    currentBooking.players = existing.players || [];
+                    editDepositBtn.style.display = 'none';
+                }
+                // Check if it's anonymous booking
+                else if (existing.name === 'حجز بدون اسم') {
+                    isAnonymousMode = true;
+                    noBookingCheckbox.checked = false;
+                    quickBookingCheckbox.checked = false;
+                    bookingFields.style.display = 'contents';
+                    anonymousCheckbox.checked = true;
+                    nameField.style.display = 'none';
+                    phoneField.style.display = 'none';
+                    depositField.style.display = 'block';
+                    nameInput.value = 'حجز بدون اسم';
+                    depositInput.value = existing.deposit || 0;
+                    currentBooking.players = existing.players || [];
+                    currentBooking.deposit = existing.deposit || 0;
+                    depositInput.setAttribute('readonly', 'readonly');
+                    editDepositBtn.style.display = 'flex';
+                    editDepositBtn.classList.remove('editing');
+                    editDepositBtn.innerHTML = '<span>✏️</span>';
+                } else {
+                    // Regular booking with name
+                    noBookingCheckbox.checked = false;
+                    quickBookingCheckbox.checked = false;
+                    bookingFields.style.display = 'contents';
+                    anonymousCheckbox.checked = false;
+                    nameField.style.display = 'block';
+                    phoneField.style.display = 'block';
+                    depositField.style.display = 'block';
+                    nameInput.value = existing.name || '';
+                    phoneInput.value = existing.phone || '';
+                    
+                    nameInput.setAttribute('readonly', 'readonly');
+                    phoneInput.setAttribute('readonly', 'readonly');
+                    editBtn.style.display = 'flex';
+                    editBtn.classList.remove('editing');
+                    editBtn.innerHTML = '<span>✏️</span>';
+                    
+                    depositInput.value = existing.deposit || 0;
+                    currentBooking.players = existing.players || [];
+                    currentBooking.deposit = existing.deposit || 0;
+                    depositInput.setAttribute('readonly', 'readonly');
+                    editDepositBtn.style.display = 'flex';
+                    editDepositBtn.classList.remove('editing');
+                    editDepositBtn.innerHTML = '<span>✏️</span>';
+                }
+                
+            } else {
+                // New booking - hide clear button and edit deposit button
+                clearBtn.style.display = 'none';
+                editDepositBtn.style.display = 'none';
+                noBookingCheckbox.checked = false;
+                quickBookingCheckbox.checked = false;
+                bookingFields.style.display = 'contents';
+                anonymousCheckbox.checked = false;
+                nameField.style.display = 'block';
+                phoneField.style.display = 'block';
+                depositField.style.display = 'block';
+                nameInput.value = '';
+                phoneInput.value = '';
+                depositInput.value = 0;
+                currentBooking.players = [];
+                currentBooking.deposit = 0;
+                
+                nameInput.removeAttribute('readonly');
+                phoneInput.removeAttribute('readonly');
+                depositInput.removeAttribute('readonly');
+                editBtn.style.display = 'none';
+            }
+
+            const field = FIELDS.find(f => f.id === fieldId);
+            document.getElementById('modalTitle').textContent = field.name + ' - ' + timeSlot;
+            
+            // Set price display and custom price field
+            const customPriceInput = document.getElementById('customPrice');
+            if (existing && existing.customPrice) {
+                document.getElementById('totalAmount').textContent = existing.customPrice;
+                customPriceInput.value = existing.customPrice;
+                customPriceInput.placeholder = field.price + ' (السعر الافتراضي)';
+                currentBooking.price = existing.customPrice;
+            } else {
+                document.getElementById('totalAmount').textContent = price;
+                customPriceInput.value = '';
+                customPriceInput.placeholder = field.price + ' (السعر الافتراضي)';
+                currentBooking.price = price;
+            }
+            
+            // Update total amount when custom price changes
+            customPriceInput.oninput = function() {
+                const newPrice = parseFloat(this.value);
+                if (newPrice && newPrice > 0) {
+                    document.getElementById('totalAmount').textContent = newPrice;
+                    currentBooking.price = newPrice;
+                    updateProgress();
+                } else {
+                    document.getElementById('totalAmount').textContent = price;
+                    currentBooking.price = price;
+                    updateProgress();
+                }
+            };
+
+            updatePlayersList();
+            updateProgress();
+
+            document.getElementById('bookingModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('bookingModal').classList.remove('active');
+            isEditMode = false;
+            isDepositEditMode = false;
+            currentBooking = null;
+        }
+
+        function addPlayer() {
+            const name = document.getElementById('playerName').value.trim();
+            const amount = parseFloat(document.getElementById('playerAmount').value);
+
+            if (!name) {
+                alert('⚠️ الرجاء إدخال اسم اللاعب');
+                return;
+            }
+
+            if (!amount || amount <= 0) {
+                alert('⚠️ الرجاء إدخال مبلغ صحيح');
+                return;
+            }
+
+            currentBooking.players.push({ name: name, amount: amount });
+
+            document.getElementById('playerName').value = '';
+            document.getElementById('playerAmount').value = '';
+
+            updatePlayersList();
+            updateProgress();
+        }
+
+        function removePlayer(index) {
+            if (confirm('هل تريد حذف هذا اللاعب؟')) {
+                currentBooking.players.splice(index, 1);
+                updatePlayersList();
+                updateProgress();
+            }
+        }
+
+        function updatePlayersList() {
+            const container = document.getElementById('playersList');
+            
+            if (!currentBooking.players || currentBooking.players.length === 0) {
+                container.innerHTML = '<div class="empty-state">لا توجد بيانات لاعبين</div>';
+                return;
+            }
+
+            container.innerHTML = currentBooking.players.map((player, idx) => 
+                '<div class="player-item">' +
+                    '<div class="player-info">' +
+                        '<h4>' + player.name + '</h4>' +
+                        '<p>' + player.amount + ' ريال</p>' +
+                    '</div>' +
+                    '<button class="delete-player-btn" onclick="removePlayer(' + idx + ')">🗑️</button>' +
+                '</div>'
+            ).join('');
+        }
+
+        function updateProgress() {
+            const deposit = parseFloat(document.getElementById('depositAmount').value) || 0;
+            const paid = calculatePaid(currentBooking.players);
+            const totalPaid = paid + deposit;
+            const remaining = currentBooking.price - totalPaid;
+            const percent = Math.min((totalPaid / currentBooking.price) * 100, 100);
+
+            document.getElementById('paidAmount').textContent = paid;
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('remainingAmount').textContent = remaining + ' ريال';
+            
+            // Show deposit info if exists
+            const depositInfo = document.getElementById('depositInfo');
+            if (deposit > 0) {
+                depositInfo.textContent = '💳 العربون: ' + deposit + ' ريال (مخصوم من المتبقي)';
+                depositInfo.style.display = 'block';
+            } else {
+                depositInfo.textContent = '';
+                depositInfo.style.display = 'none';
+            }
+        }
+
+        function calculatePaid(players) {
+            if (!players) return 0;
+            return players.reduce((sum, p) => sum + p.amount, 0);
+        }
+
+        function saveBooking() {
+            try {
+                console.log('saveBooking called');
+                console.log('currentBooking:', currentBooking);
+                
+                const isNoBooking = document.getElementById('noBookingMode').checked;
+                const isQuickBooking = document.getElementById('quickBookingMode').checked;
+                
+                if (isNoBooking) {
+                    // Save as no booking status
+                    const key = getBookingKey(currentBooking.fieldId, currentBooking.slotIndex);
+                    bookingsData[key] = {
+                        name: 'لا يوجد حجز',
+                        phone: '',
+                        deposit: 0,
+                        players: [],
+                        fieldId: currentBooking.fieldId,
+                        slotIndex: currentBooking.slotIndex,
+                        isNoBooking: true
+                    };
+
+                    saveData();
+                    renderTimeSlots();
+                    updateStats();
+                    closeModal();
+                    alert('✅ تم تعيين الفترة: لا يوجد حجز');
+                    return;
+                }
+                
+                if (isQuickBooking) {
+                    // Save as quick booking
+                    const customPrice = parseFloat(document.getElementById('customPrice').value) || null;
+                    const key = getBookingKey(currentBooking.fieldId, currentBooking.slotIndex);
+                    bookingsData[key] = {
+                        name: 'حجز سريع',
+                        phone: '',
+                        deposit: 0,
+                        players: currentBooking.players,
+                        fieldId: currentBooking.fieldId,
+                        slotIndex: currentBooking.slotIndex,
+                        isQuickBooking: true,
+                        customPrice: customPrice
+                    };
+
+                    saveData();
+                    renderTimeSlots();
+                    updateStats();
+                    closeModal();
+                    return;
+                }
+                
+                const name = document.getElementById('bookingName').value.trim();
+                const phone = document.getElementById('bookingPhone').value.trim();
+                const deposit = parseFloat(document.getElementById('depositAmount').value) || 0;
+                const customPrice = parseFloat(document.getElementById('customPrice').value) || null;
+                const isAnonymous = document.getElementById('anonymousBooking').checked;
+
+                console.log('name:', name, 'isAnonymous:', isAnonymous);
+
+                if (!isAnonymous && !name) {
+                    alert('⚠️ الرجاء إدخال اسم صاحب الحجز أو اختيار أحد الخيارات الأخرى');
+                    return;
+                }
+
+                const key = getBookingKey(currentBooking.fieldId, currentBooking.slotIndex);
+                bookingsData[key] = {
+                    name: isAnonymous ? 'حجز بدون اسم' : name,
+                    phone: phone,
+                    deposit: deposit,
+                    players: currentBooking.players,
+                    fieldId: currentBooking.fieldId,
+                    slotIndex: currentBooking.slotIndex,
+                    isAnonymous: isAnonymous,
+                    customPrice: customPrice
+                };
+
+                console.log('Saving booking:', bookingsData[key]);
+
+                saveData();
+                renderTimeSlots();
+                updateStats();
+                closeModal();
+                
+                console.log('Booking saved successfully');
+            } catch (error) {
+                console.error('Error in saveBooking:', error);
+                alert('❌ حدث خطأ أثناء حفظ الحجز: ' + error.message);
+            }
+        }
+
+        function deleteBooking() {
+            if (!confirm('⚠️ هل أنت متأكد من حذف هذا الحجز نهائياً؟\nسيتم حذف جميع البيانات ولن يمكن استرجاعها.')) {
+                return;
+            }
+
+            const key = getBookingKey(currentBooking.fieldId, currentBooking.slotIndex);
+            delete bookingsData[key];
+
+            saveData();
+            renderTimeSlots();
+            updateStats();
+            closeModal();
+
+            alert('🗑️ تم حذف الحجز نهائياً');
+        }
+
+        function clearBooking() {
+            if (!confirm('هل تريد إلغاء هذا الحجز وإعادة الملعب إلى حالة "متاح"؟')) {
+                return;
+            }
+
+            const key = getBookingKey(currentBooking.fieldId, currentBooking.slotIndex);
+            delete bookingsData[key];
+
+            saveData();
+            renderTimeSlots();
+            updateStats();
+            closeModal();
+
+            alert('🔄 تم إلغاء الحجز - الملعب أصبح متاحاً');
+        }
+
+        function shareWhatsApp() {
+            const name = document.getElementById('bookingName').value.trim();
+            const phone = document.getElementById('bookingPhone').value.trim();
+            const deposit = parseFloat(document.getElementById('depositAmount').value) || 0;
+
+            if (!name) {
+                alert('⚠️ الرجاء إدخال اسم صاحب الحجز');
+                return;
+            }
+
+            const field = FIELDS.find(f => f.id === currentBooking.fieldId);
+            const paid = calculatePaid(currentBooking.players);
+            const totalPaid = paid + deposit;
+            const remaining = currentBooking.price - totalPaid;
+            const date = document.getElementById('selectedDate').value;
+
+            let msg = '🏟️ *تفاصيل الحجز - ملاعب الأوائل*\n\n';
+            msg += '📍 *الملعب:* ' + field.name + '\n';
+            msg += '⏰ *الوقت:* ' + currentBooking.timeSlot + '\n';
+            msg += '📅 *التاريخ:* ' + date + '\n\n';
+            
+            if (deposit > 0) {
+                msg += '💳 *العربون المدفوع:* ' + deposit + ' ريال\n\n';
+            }
+            
+            if (currentBooking.players.length > 0) {
+                msg += '👥 *قائمة اللاعبين:*\n';
+                currentBooking.players.forEach((p, i) => {
+                    msg += (i + 1) + '. ' + p.name + ' - ' + p.amount + ' ريال\n';
+                });
+                msg += '\n';
+            }
+
+            msg += '💰 *المبلغ الإجمالي:* ' + currentBooking.price + ' ريال\n';
+            msg += '✅ *المدفوع:* ' + totalPaid + ' ريال\n';
+            msg += '⏳ *المتبقي:* ' + remaining + ' ريال\n\n';
+            msg += 'شكراً لاختياركم ملاعب الأوائل ⚽';
+
+            const phoneNumber = phone.replace(/\D/g, '');
+            const url = 'https://wa.me/' + phoneNumber + '?text=' + encodeURIComponent(msg);
+            window.open(url, '_blank');
+        }
+
+        function printBooking() {
+            const name = document.getElementById('bookingName').value.trim();
+            const deposit = parseFloat(document.getElementById('depositAmount').value) || 0;
+            
+            if (!name) {
+                alert('⚠️ الرجاء إدخال اسم صاحب الحجز');
+                return;
+            }
+
+            const field = FIELDS.find(f => f.id === currentBooking.fieldId);
+            const paid = calculatePaid(currentBooking.players);
+            const totalPaid = paid + deposit;
+            const remaining = currentBooking.price - totalPaid;
+            const date = document.getElementById('selectedDate').value;
+
+            let playersRows = '';
+            if (currentBooking.players.length > 0) {
+                playersRows = currentBooking.players.map((p, i) => {
+                    return '<tr><td>' + (i + 1) + '</td><td>' + p.name + '</td><td>' + p.amount + ' ريال</td></tr>';
+                }).join('');
+            }
+
+            const depositRow = deposit > 0 ? '<div class="row"><strong>العربون المدفوع:</strong><span style="color: #f59e0b;">' + deposit + ' ريال</span></div>' : '';
+
+            const printContent = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>فاتورة الحجز</title><style>* { font-family: Arial, sans-serif; } body { padding: 40px; max-width: 800px; margin: 0 auto; } h1 { text-align: center; border-bottom: 3px solid #10b981; padding-bottom: 15px; color: #1e293b; } .info { margin: 30px 0; } .row { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #e2e8f0; } table { width: 100%; border-collapse: collapse; margin: 25px 0; } th, td { padding: 12px; text-align: right; border: 1px solid #cbd5e1; } th { background: #f1f5f9; font-weight: bold; } .totals { margin: 25px 0; font-size: 1.1em; } .totals div { padding: 10px; } .footer { text-align: center; margin-top: 40px; color: #64748b; }</style></head><body><h1>🏟️ ملاعب الأوائل - فاتورة الحجز</h1><div class="info"><div class="row"><strong>اسم صاحب الحجز:</strong><span>' + name + '</span></div><div class="row"><strong>الملعب:</strong><span>' + field.name + '</span></div><div class="row"><strong>الوقت:</strong><span>' + currentBooking.timeSlot + '</span></div><div class="row"><strong>التاريخ:</strong><span>' + date + '</span></div>' + depositRow + '</div>' + (currentBooking.players.length > 0 ? '<table><thead><tr><th>#</th><th>اسم اللاعب</th><th>المبلغ المدفوع</th></tr></thead><tbody>' + playersRows + '</tbody></table>' : '') + '<div class="totals"><div><strong>المبلغ الإجمالي:</strong> ' + currentBooking.price + ' ريال</div><div style="color: #00d4ff;"><strong>المدفوع:</strong> ' + totalPaid + ' ريال</div><div style="color: #ef4444;"><strong>المتبقي:</strong> ' + remaining + ' ريال</div></div><div class="footer"><p>شكراً لاختياركم ملاعب الأوائل ⚽</p></div><script>window.print();<\/script></body></html>';
+
+            const win = window.open('', '_blank');
+            win.document.write(printContent);
+            win.document.close();
+        }
+
+        document.getElementById('bookingModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        document.getElementById('depositAmount').addEventListener('input', updateProgress);
+    </script>
+</body>
+</html>
